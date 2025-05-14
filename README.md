@@ -48,11 +48,11 @@ It is recommended to use a Python virtual environment for local development to k
 
 1. Build the Docker image:
    ```sh
-   docker build -t nexus-app .
+   docker build -t genai .
    ```
 2. Run the Docker container:
    ```sh
-   docker run -p 8080:8080 nexus-app
+   docker run -p 8080:8080 genai
    ```
 3. Visit [http://localhost:8080](http://localhost:8080)
 
@@ -60,24 +60,66 @@ It is recommended to use a Python virtual environment for local development to k
 
 1. Set your Google Cloud project:
    ```sh
-   gcloud config set project [PROJECT-ID]
+   gcloud config set project paulbonneville-com
    ```
 2. Build the container and push to Google Container Registry:
    ```sh
-   docker build -t gcr.io/[PROJECT-ID]/nexus-app .
-   docker push gcr.io/[PROJECT-ID]/nexus-app
+   docker build -t gcr.io/paulbonneville-com/genai .
+   docker push gcr.io/paulbonneville-com/genai
    ```
-3. Deploy to Cloud Run:
+3. Deploy to Cloud Run (with authentication required):
    ```sh
-   gcloud run deploy nexus-app \
-     --image gcr.io/[PROJECT-ID]/nexus-app \
+   gcloud run deploy genai \
+     --image gcr.io/paulbonneville-com/genai \
      --platform managed \
-     --region [REGION] \
-     --allow-unauthenticated
+     --region us-central1 \
+     --no-allow-unauthenticated
    ```
-4. After deployment, Cloud Run will provide a service URL. Visit it in your browser.
+4. After deployment, Cloud Run will provide a service URL. For this project, it is:
+   ```
+   https://genai-860937201650.us-central1.run.app
+   ```
 
 ---
 
-Replace `[PROJECT-ID]` and `[REGION]` with your actual Google Cloud project ID and desired region (e.g., `us-central1`). 
+## Authenticating and Testing the Cloud Run Service with a Service Account
+
+To securely test your private Cloud Run service, use a dedicated service account. **Do not commit the key file to version control.**
+
+1. **Create the service account:**
+   ```sh
+   gcloud iam service-accounts create genai-app \
+     --display-name="GenAI App Service Account"
+   ```
+2. **Grant the service account the Cloud Run Invoker role:**
+   ```sh
+   gcloud run services add-iam-policy-binding genai \
+     --region us-central1 \
+     --member="serviceAccount:genai-app@paulbonneville-com.iam.gserviceaccount.com" \
+     --role="roles/run.invoker"
+   ```
+3. **Create and download the service account key:**
+   ```sh
+   gcloud iam service-accounts keys create genai-app-key.json \
+     --iam-account genai-app@paulbonneville-com.iam.gserviceaccount.com
+   ```
+   - This will create a file called `genai-app-key.json` in your current directory.
+   - **Keep this file secure and do not commit it to version control.**
+4. **Authenticate locally using the service account:**
+   ```sh
+   gcloud auth activate-service-account \
+     --key-file=genai-app-key.json
+   ```
+5. **Obtain an identity token and test the service:**
+   ```sh
+   export SERVICE_URL="https://genai-860937201650.us-central1.run.app"
+   export TOKEN=$(gcloud auth print-identity-token)
+   curl -H "Authorization: Bearer $TOKEN" $SERVICE_URL
+   ```
+
+You should receive the expected JSON response from your service if authentication is configured correctly.
+
+---
+
+Replace `[REGION]` with your actual Google Cloud region if different from `us-central1`.
 
