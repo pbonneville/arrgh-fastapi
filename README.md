@@ -40,7 +40,7 @@ It is recommended to use a Python virtual environment for local development to k
    ```
 2. Start the app:
    ```sh
-   uvicorn main:app --reload
+   uvicorn src.main:app --reload
    ```
 3. Visit [http://localhost:8000](http://localhost:8000)
 
@@ -122,4 +122,12 @@ You should receive the expected JSON response from your service if authenticatio
 ---
 
 Replace `[REGION]` with your actual Google Cloud region if different from `us-central1`.
+
+## Continuous Deployment with Google Cloud Run
+
+This project is configured so that Google Cloud Run automatically builds and deploys your application whenever you push changes to the `main` branch of your repository. This is achieved by a Cloud Build trigger in the Google Cloud Console that watches your repository for changes. When a new commit is pushed to `main`, Cloud Build builds your Docker image and deploys it to Cloud Run automatically.
+
+This enables a seamless CI/CD workflow, ensuring that your latest code is always running in production without manual intervention.
+
+For more information, see the [Cloud Run Continuous Deployment documentation](https://cloud.google.com/run/docs/continuous-deployment).
 

@@ -13,10 +13,10 @@ COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app code
-COPY . .
+COPY src/ ./src/
 
 # Expose the port Cloud Run expects
 EXPOSE 8080
 
 # Run the app with Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"] 
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8080"] 
