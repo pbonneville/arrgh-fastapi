@@ -5,7 +5,7 @@
 This project is a minimal FastAPI application ready to be deployed on Google Cloud Run using Docker.
 
 ## Prerequisites
-- Python 3.11+
+- Python 3.11, 3.12, or 3.13
 - Docker
 - Google Cloud SDK (`gcloud`)
 - A Google Cloud project with billing enabled
@@ -31,6 +31,10 @@ It is recommended to use a Python virtual environment for local development to k
    ```sh
    pip install -r requirements.txt
    ```
+4. For development, also install test dependencies:
+   ```sh
+   pip install -r requirements-dev.txt
+   ```
 
 ## Running Locally
 
@@ -43,6 +47,17 @@ It is recommended to use a Python virtual environment for local development to k
    uvicorn src.main:app --reload
    ```
 3. Visit [http://localhost:8000](http://localhost:8000)
+
+## Running Tests
+
+1. Install test dependencies (if not already done):
+   ```sh
+   pip install -r requirements-dev.txt
+   ```
+2. Run the test suite:
+   ```sh
+   PYTHONPATH=src python -m pytest tests/ -v
+   ```
 
 ## Building and Running with Docker
 
@@ -123,7 +138,17 @@ You should receive the expected JSON response from your service if authenticatio
 
 Replace `[REGION]` with your actual Google Cloud region if different from `us-central1`.
 
-## Continuous Deployment with Google Cloud Run
+## Continuous Integration and Deployment
+
+### GitHub Actions CI
+
+This project uses GitHub Actions to automatically run tests on every pull request and push to the `main` branch. The workflow:
+- Tests against Python 3.11, 3.12, and 3.13
+- Installs all dependencies
+- Runs the pytest test suite
+- Blocks PR merging if tests fail
+
+### Google Cloud Run CD
 
 This project is configured so that Google Cloud Run automatically builds and deploys your application whenever you push changes to the `main` branch of your repository. This is achieved by a Cloud Build trigger in the Google Cloud Console that watches your repository for changes. When a new commit is pushed to `main`, Cloud Build builds your Docker image and deploys it to Cloud Run automatically.
 
