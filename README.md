@@ -90,9 +90,9 @@ It is recommended to use a Python virtual environment for local development to k
      --region us-central1 \
      --no-allow-unauthenticated
    ```
-4. After deployment, Cloud Run will provide a service URL. For this project, it is:
-   ```
-   https://genai-860937201650.us-central1.run.app
+4. After deployment, get the service URL:
+   ```sh
+   gcloud run services describe genai --region=us-central1 --format="value(status.url)"
    ```
 
 ---
@@ -127,7 +127,7 @@ To securely test your private Cloud Run service, use a dedicated service account
    ```
 5. **Obtain an identity token and test the service:**
    ```sh
-   export SERVICE_URL="https://genai-860937201650.us-central1.run.app"
+   export SERVICE_URL=$(gcloud run services describe genai --region=us-central1 --format="value(status.url)")
    export TOKEN=$(gcloud auth print-identity-token)
    curl -H "Authorization: Bearer $TOKEN" $SERVICE_URL
    ```
