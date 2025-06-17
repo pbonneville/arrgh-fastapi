@@ -4,6 +4,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../s
 
 from main import app
 from fastapi.testclient import TestClient
+import main
 
 client = TestClient(app)
 
@@ -31,4 +32,27 @@ def test_readiness_check():
     data = response.json()
     assert data["status"] == "ready"
     assert "environment" in data
-    assert "version" in data 
+    assert "version" in data
+
+def test_health_check_during_shutdown():
+    """Test that health check returns unhealthy status during shutdown."""
+    # First, verify normal healthy state
+    response = client.get("/health")
+    assert response.status_code == 200
+    assert response.json()["status"] == "healthy"
+    
+    # Simulate shutdown condition by setting the shutdown flag
+    original_shutdown_event = main.shutdown_event
+    try:
+        main.shutdown_event = True
+        
+        # Now health check should return unhealthy
+        response = client.get("/health")
+        assert response.status_code == 503
+        data = response.json()
+        assert data["status"] == "unhealthy"
+        assert data["message"] == "Service is shutting down"
+        
+    finally:
+        # Reset the shutdown flag to not affect other tests
+        main.shutdown_event = original_shutdown_event 
