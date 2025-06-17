@@ -1,0 +1,46 @@
+steps:
+  # Build the container image
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '--no-cache'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/arrgh-fastapi/arrgh-fastapi:$COMMIT_SHA'
+      - '.'
+      - '-f'
+      - 'Dockerfile'
+    id: 'Build'
+
+  # Push the container image to Artifact Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/arrgh-fastapi/arrgh-fastapi:$COMMIT_SHA'
+    id: 'Push'
+
+  # Deploy container image to Cloud Run
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk:slim'
+    entrypoint: 'gcloud'
+    args:
+      - 'run'
+      - 'services'
+      - 'update'
+      - 'genai'
+      - '--platform=managed'
+      - '--image=us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/arrgh-fastapi/arrgh-fastapi:$COMMIT_SHA'
+      - '--labels=managed-by=gcp-cloud-build-deploy-cloud-run,commit-sha=$COMMIT_SHA,gcb-build-id=$BUILD_ID'
+      - '--region=us-central1'
+      - '--quiet'
+    id: 'Deploy'
+
+# Store images in Artifact Registry
+images:
+  - 'us-central1-docker.pkg.dev/paulbonneville-com/cloud-run-source-deploy/arrgh-fastapi/arrgh-fastapi:$COMMIT_SHA'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+tags:
+  - 'gcp-cloud-build-deploy-cloud-run'
+  - 'gcp-cloud-build-deploy-cloud-run-managed'
+  - 'arrgh-fastapi'
