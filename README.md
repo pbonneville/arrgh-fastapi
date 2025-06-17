@@ -1,4 +1,4 @@
-# genai
+# arrgh-fastapi
 
 # FastAPI on Google Cloud Run
 
