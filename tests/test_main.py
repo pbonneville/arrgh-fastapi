@@ -10,4 +10,4 @@ client = TestClient(app)
 def test_read_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to your FastAPI app on Google Cloud Run!"} 
+    assert response.json() == {"message": "Welcome to your FastAPI app on Google Cloud Run! This is a test."} 
